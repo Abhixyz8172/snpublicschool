@@ -1,0 +1,540 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S N Public School</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            background-color: #f4f4f4;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: #1a3c34;
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar ul li {
+            margin: 0 25px;
+        }
+
+        .navbar ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .navbar ul li a:hover {
+            color: #f1c40f;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: url('https://images.unsplash.com/photo-1580582932707-520aed4d91b8') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            margin-top: 60px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 50px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-content p {
+            font-size: 24px;
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+
+        .admission-notice {
+            font-size: 28px;
+            color: #f1c40f;
+            font-weight: 600;
+            text-transform: uppercase;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Sections */
+        .section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #1a3c34;
+            font-size: 36px;
+            font-weight: 600;
+        }
+
+        /* About Section */
+        .about-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-content img {
+            max-width: 100%;
+            width: 500px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .about-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .about-text p {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        /* Admission Section */
+        .admission-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .admission-content p {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .admission-content ul {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .admission-content ul li {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .admission-content ul li::before {
+            content: '✓';
+            color: #1a3c34;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Registration Form */
+        .registration-form {
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .registration-form input,
+        .registration-form select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .registration-form input:focus,
+        .registration-form select:focus {
+            border-color: #f1c40f;
+            outline: none;
+        }
+
+        .registration-form button {
+            padding: 12px;
+            background-color: #1a3c34;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .registration-form button:hover {
+            background-color: #f1c40f;
+            color: #1a3c34;
+        }
+
+        /* Gallery */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-grid img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gallery-grid img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Contact */
+        .contact {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-info {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .contact-info p {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .contact form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .contact input,
+        .contact textarea {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .contact input:focus,
+        .contact textarea:focus {
+            border-color: #f1c40f;
+            outline: none;
+        }
+
+        .contact button {
+            padding: 12px;
+            background-color: #1a3c34;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .contact button:hover {
+            background-color: #f1c40f;
+            color: #1a3c34;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #1a3c34;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .navbar ul li {
+                margin: 10px 0;
+            }
+
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            .hero-content p {
+                font-size: 18px;
+            }
+
+            .admission-notice {
+                font-size: 20px;
+            }
+
+            .about-content {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .section h2 {
+                font-size: 28px;
+            }
+
+            .contact, .admission-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#admission">Admission</a></li>
+            <li><a href="#academics">Academics</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Welcome to S N Public School</h1>
+            <p>Bhaisahi Khurd, Bansgaon, Gorakhpur (U.P.)</p>
+            <p class="admission-notice">Registration Open 2025-2026</p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <h2>About Us</h2>
+        <div class="about-content">
+            <img src="https://images.unsplash.com/photo-1596464716127-f34a2d1f9d5b" alt="School Campus">
+            <div class="about-text">
+                <p>S N Public School, Bhaisahi Khurd, Bansgaon, Gorakhpur (U.P.), is committed to nurturing young minds under the guidance of our esteemed Director, Shri Suryabhan Yadav. Established with a vision to provide quality education, we focus on holistic development through a blend of academic excellence and extracurricular activities.</p>
+                <p>Our school offers classes from Playway to 8th standard, creating a supportive environment where students can grow academically, socially, and morally.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admission Section -->
+    <section id="admission" class="section">
+        <h2>Registration 2025-2026</h2>
+        <div class="admission-content">
+            <p>Registrations are now open for the academic session 2025-2026 at S N Public School. We welcome students from Playway to 8th standard to join our vibrant learning community.</p>
+            <ul>
+                <li>Classes: Playway to 8th Standard</li>
+                <li>Admission Process: Submit the registration form below or visit the school office</li>
+                <li>Documents Required: Birth certificate, previous academic records, and 2 passport-sized photographs</li>
+                <li>Contact: 9935969039, 8172897507 or abhishek735yadav@gmail.com</li>
+            </ul>
+            <form id="registration-form" class="registration-form">
+                <input type="text" name="student_name" placeholder="Student's Full Name" required>
+                <input type="text" name="parent_name" placeholder="Parent's Full Name" required>
+                <input type="tel" name="contact_number" placeholder="Contact Number" pattern="[0-9]{10}" required>
+                <input type="email" name="email" placeholder="Email Address" required>
+                <select name="class" required>
+                    <option value="" disabled selected>Select Class</option>
+                    <option value="Playway">Playway</option>
+                    <option value="Nursery">Nursery</option>
+                    <option value="LKG">LKG</option>
+                    <option value="UKG">UKG</option>
+                    <option value="Class 1">Class 1</option>
+                    <option value="Class 2">Class 2</option>
+                    <option value="Class 3">Class 3</option>
+                    <option value="Class 4">Class 4</option>
+                    <option value="Class 5">Class 5</option>
+                    <option value="Class 6">Class 6</option>
+                    <option value="Class 7">Class 7</option>
+                    <option value="Class 8">Class 8</option>
+                </select>
+                <input type="date" name="dob" placeholder="Date of Birth" required>
+                <button type="submit">Submit Registration</button>
+            </form>
+            <p>For more information, please reach out to our admission office.</p>
+        </div>
+    </section>
+
+    <!-- Academics Section -->
+    <section id="academics" class="section">
+        <h2>Academics</h2>
+        <p>At S N Public School, we offer a comprehensive curriculum for students from Playway to 8th standard. Our subjects include Mathematics, Science, Social Studies, Hindi, English, and more, designed to meet national educational standards.</p>
+        <p>We emphasize interactive learning through the Playway method for younger students and provide extracurricular activities like art, music, and sports to ensure all-round development.</p>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section">
+        <h2>Gallery</h2>
+        <div class="gallery-grid">
+            <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f" alt="Annual Function">
+            <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7" alt="Classroom Learning">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="Sports Day">
+            <img src="https://images.unsplash.com/photo-1541823709867-1b206113e9e9" alt="Science Exhibition">
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <h2>Contact Us</h2>
+        <div class="contact">
+            <div class="contact-info">
+                <p><strong>Address:</strong> S N Public School, Bhaisahi Khurd, Bansgaon, Gorakhpur (U.P.)</p>
+                <p><strong>Contact Numbers:</strong> 9935969039, 8172897507</p>
+                <p><strong>Email:</strong> abhishek735yadav@gmail.com</p>
+                <p><strong>Director:</strong> Shri Suryabhan Yadav</p>
+            </div>
+            <form id="contact-form" class="contact-form">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 S N Public School, Bhaisahi Khurd, Bansgaon, Gorakhpur (U.P.). All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.navbar a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sectionId = this.getAttribute('href');
+                document.querySelector(sectionId).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Contact form submission
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+
+        // Registration form submission
+        document.getElementById('registration-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for registering! Our admission office will contact you soon.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
